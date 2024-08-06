@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <style>
+        body {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #fbc2eb, #a6c0fe);
+    margin: 0;
+    overflow: hidden;
+}
+
+.player {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    width: 350px;
+    text-align: center;
+}
+
+.music-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.music-info img {
+    width: 100px;
+    border-radius: 8px;
+    margin-right: 15px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.music-info img:hover {
+    transform: scale(1.05);
+}
+
+.track-details {
+    text-align: left;
+}
+
+.track-details h2 {
+    font-size: 18px;
+    margin: 0;
+    color: #333;
+}
+
+.track-details p {
+    font-size: 14px;
+    color: #666;
+    margin: 5px 0 0;
+}
+
+.controls {
+    margin-top: 15px;
+}
+
+.controls button {
+    background: #6200ea;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    padding: 15px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    margin: 5px;
+}
+
+.controls button:hover {
+    background: #3700b3;
+    transform: scale(1.1);
+}
+
+.controls button:active {
+    background: #03dac6;
+    transform: scale(1);
+}
+
+.controls button.next {
+    background: #03dac6;
+}
+
+.controls button.next:hover {
+    background: #018786;
+}
+
+.controls input[type="range"] {
+    width: 100px;
+    margin: 10px 0;
+    -webkit-appearance: none;
+    background: transparent;
+}
+
+.controls input[type="range"]::-webkit-slider-runnable-track {
+    background: #6200ea;
+    height: 8px;
+    border-radius: 4px;
+}
+
+.controls input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    background: #fff;
+    border: 2px solid #6200ea;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.controls input[type="range"]::-webkit-slider-thumb:hover {
+    background: #3700b3;
+}
+
+.controls input[type="range"]::-moz-range-track {
+    background: #6200ea;
+    height: 8px;
+    border-radius: 4px;
+}
+
+.controls input[type="range"]::-moz-range-thumb {
+    background: #fff;
+    border: 2px solid #6200ea;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.controls input[type="range"]::-moz-range-thumb:hover {
+    background: #3700b3;
+}
+
+.time {
+    font-size: 14px;
+    color: #333;
+    margin-top: 10px;
+}
+    </style>
+</head>
+<body>
+    <div class="player">
+        <div class="music-info">
+            <img id="cover" src="images/cover1.jpg" alt="Album Cover">
+            <div class="track-details">
+                <h2 id="title">Madhuramu Kadha - The Family Star</h2>
+                <p id="artist">Shreya Ghoshal, Gopi Sundar</p>
+            </div>
+        </div>
+        <audio id="audio" src="music/song1.mp3"></audio>
+        <div class="controls">
+            <button id="prev">⏮</button>
+            <button id="playPause">Play</button>
+            <button id="next" class="next">⏭</button>
+            <input type="range" id="seek" min="0" max="100" step="0.1" value="0">
+            <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
+            <div class="time">
+                <span id="currentTime">00:00</span> / <span id="duration">00:00</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const audio = document.getElementById('audio');
+    const playPauseButton = document.getElementById('playPause');
+    const nextButton = document.getElementById('next');
+    const prevButton = document.getElementById('prev');
+    const seekBar = document.getElementById('seek');
+    const volumeControl = document.getElementById('volume');
+    const currentTimeDisplay = document.getElementById('currentTime');
+    const durationDisplay = document.getElementById('duration');
+    const titleElement = document.getElementById('title');
+    const artistElement = document.getElementById('artist');
+
+    let playlist = [
+        { src: 'music/song1.mp3', cover: 'images/cover1.jpg', title: 'Madhuramu Kadha - The Family Star', artist: 'Shreya Ghoshal' },
+        { src: 'music/song2.mp3', cover: 'images/cover2.jpg', title: 'Agar Tum Saath Ho - Tamasha', artist: 'Alka Yagnik, Arijit Singh, Amaal Mallik' },
+        { src: 'audio/track3.mp3', cover: 'images/cover3.jpg', title: 'Track 3', artist: 'Artist 3' }
+    ];
+    let currentTrackIndex = 0;
+
+    const updateTimeDisplay = () => {
+        const currentTime = audio.currentTime;
+        const duration = audio.duration;
+        const formatTime = (time) => {
+            const minutes = Math.floor(time / 60);
+            const seconds = Math.floor(time % 60);
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        };
+        currentTimeDisplay.textContent = formatTime(currentTime);
+        durationDisplay.textContent = formatTime(duration);
+        seekBar.value = (currentTime / duration) * 100;
+    };
+
+    const updateTrack = () => {
+        const track = playlist[currentTrackIndex];
+        audio.src = track.src;
+        document.getElementById('cover').src = track.cover;
+        titleElement.textContent = track.title;
+        artistElement.textContent = track.artist;
+    };
+
+    const playPause = () => {
+        if (audio.paused) {
+            audio.play();
+            playPauseButton.textContent = 'Pause';
+        } else {
+            audio.pause();
+            playPauseButton.textContent = 'Play';
+        }
+    };
+
+    const nextTrack = () => {
+        currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+        updateTrack();
+        audio.play();
+        playPauseButton.textContent = 'Pause';
+    };
+
+    const prevTrack = () => {
+        currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+        updateTrack();
+        audio.play();
+        playPauseButton.textContent = 'Pause';
+    };
+
+    const seek = (event) => {
+        const seekTime = (event.target.value / 100) * audio.duration;
+        audio.currentTime = seekTime;
+    };
+
+    const setVolume = (event) => {
+        audio.volume = event.target.value;
+    };
+
+    // Event listeners
+    playPauseButton.addEventListener('click', playPause);
+    nextButton.addEventListener('click', nextTrack);
+    prevButton.addEventListener('click', prevTrack);
+    seekBar.addEventListener('input', seek);
+    volumeControl.addEventListener('input', setVolume);
+
+    // Update time display when time changes
+    audio.addEventListener('timeupdate', updateTimeDisplay);
+    // Update time display when metadata is loaded
+    audio.addEventListener('loadedmetadata', updateTimeDisplay);
+
+    // Initial track load
+    updateTrack();
+});
+
+    </script>
+</body>
+</html>
